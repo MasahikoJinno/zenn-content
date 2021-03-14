@@ -170,8 +170,50 @@ yarn deploy
 
 ## routing
 
+### 以下のファイルを作成
+
+- src/pages/about.tsx ※ 静的パス
+- src/pages/dynamic/[id].tsx ※ 動的パス（id が動的になる）
+- src/routing/route.ts ※ アプリケーションのパス定義
+- src/routing/isCSR.ts ※ nextjs のサーバが動かない状態でも動的なパスに遷移できるようにする hooks
+
+### src/pages/index.tsx の修正
+
+useCSR を利用する。
+CSR（Client Side Routing）が終了するまではローディングのコンポーネントを表示。
+
+```tsx
+const execRouting = useCSR();
+
+if (!execRouting) {
+  return <p>loading...</p>;
+}
+```
+
+### 動作確認
+
+#### 開発環境での動作確認
+
+```sh
+yarn dev
+```
+
+#### ホスティングサーバでの動作確認
+
+```sh
+yarn deploy
+```
+
+### 差分
+
+https://github.com/MasahikoJinno/fe-boilerplate-21/pull/5
+
 ## auth
 
 ## data fetch
 
-## ...
+## testing
+
+## CI/CD
+
+## usage
