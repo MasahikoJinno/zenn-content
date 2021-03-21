@@ -208,7 +208,193 @@ yarn deploy
 
 https://github.com/MasahikoJinno/fe-boilerplate-21/pull/5
 
-## auth
+## ログイン機能を実装
+
+ログイン機能を実装する。
+今回は Firebase Authentication の Twitter ログインを実装する。
+
+### Firebase Authentication
+
+ココらへんを参考にする。
+[Firebase Authentication](https://firebase.google.com/docs/auth)
+[Twitter Login](https://firebase.google.com/docs/auth/web/twitter-login)
+
+### .env の作成
+
+プロジェクトルートに `.env` ファイルを作成。
+
+```.env:.env
+FIREBASE_API_KEY=
+FIREBASE_AUTH_DOMAIN=
+FIREBASE_PROJECT_ID=
+FIREBASE_STORAGE_BUCKET=
+FIREBASE_MESSAGING_SENDER_ID=
+FIREBASE_APP_ID=
+FIREBASE_MEASUREMENT_ID=
+```
+
+※ Firebase Console > プロジェクトの設定 > マイアプリ > ウェブアプリ > Firebase SDK snipet > 構成 を参考に作成。
+
+### firebase, dotenv を追加
+
+Firebase Authentication を利用するために Firebase SDK を追加します。
+また、firebaseConfig は環境変数で指定したかったので、dotenv も追加します。
+
+以下のコマンドを実行
+
+```
+$ yarn add firebase
+```
+
+```
+$ yarn add -D dotenv
+```
+
+### auth/useLogin.ts の実装
+
+認証、ログインをするために以下のファイルを作成。
+前述の通り今回は Twitter Login となります。
+
+```ts:auth/useLogin.ts
+import { useState, useEffect, useCallback, createContext } from 'react'
+import Router from 'next/router'
+import firebase from 'firebase/app'
+
+type ReturnVoidFunc = () => void
+
+type Result = [
+  /** 認証が完了したかどうか */
+  boolean,
+  /** ユーザ情報 */
+  firebase.User | null,
+  /** ログイン用の関数 */
+  ReturnVoidFunc
+]
+
+type Context = {
+  user: firebase.User | null
+  login: ReturnVoidFunc | null
+}
+
+const defaultValue = {
+  user: null,
+  login: null
+}
+
+export const UserContext = createContext<Context>(defaultValue)
+
+export const useLogin = (): Result => {
+  const [checked, setChecked] = useState(false)
+  const [user, setUser] = useState<firebase.User | null>(null)
+
+  const execLogin = useCallback(() => {
+    ;(async () => {
+      const provider = new firebase.auth.TwitterAuthProvider()
+      try {
+        await firebase.auth().signInWithPopup(provider)
+        const user = firebase.auth().currentUser
+        console.log('user:', user)
+        if (user) {
+          await Router.push('/')
+        }
+      } catch (e) {
+        console.log('err:', e)
+      }
+    })()
+  }, [])
+
+  useEffect(() => {
+    firebase.auth().onAuthStateChanged(async user => {
+      if (user) {
+        setUser(user)
+        console.log('useEffect user:', user)
+      } else {
+        await Router.push('/login')
+      }
+      setChecked(true)
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  return [checked, user, execLogin]
+}
+```
+
+※ execLogin や useEffect 内の認証に関してはアプリケーションに応じて変更する。
+
+### src/pages/\_app.tsx の実装
+
+認証を行うために、 `_app.tsx` を実装します。
+
+```tsx:src/pages/_app.tsx
+import React, { FC } from 'react'
+import { AppProps } from 'next/app'
+import Head from 'next/head'
+import getConfig from 'next/config'
+import firebase from 'firebase/app'
+import 'firebase/auth'
+// import 'firebase/firestore'
+// import 'firebase/analytics'
+
+import { useLogin, UserContext } from '../auth/useLogin'
+
+const firebaseConfig = getConfig()?.publicRuntimeConfig?.firebase?.config
+
+if (firebase.apps.length === 0) {
+  firebase.initializeApp(firebaseConfig)
+}
+
+const App: FC<AppProps> = ({ Component }) => {
+  const [authStateChecked, user, login] = useLogin()
+
+  if (!authStateChecked) {
+    return <p>...loading</p>
+  }
+
+  return (
+    <>
+      <Head>
+        <title>my next app</title>
+      </Head>
+      {process.browser && (
+        <UserContext.Provider
+          value={{
+            user,
+            login
+          }}
+        >
+          <Component />
+        </UserContext.Provider>
+      )}
+    </>
+  )
+}
+
+export default App
+```
+
+[参考: Next.js Custom App](https://nextjs.org/docs/advanced-features/custom-app)
+
+### ユーザ情報を参照する
+
+useContext を利用し、ユーザ情報を任意のコンポーネントで利用することができます。
+
+```tsx:src/pages/index.tsx
+const Home: FC = () => {
+// ...省略
+  const user = useContext(UserContext)
+// ...省略
+  return (
+    <>
+      {/* 省略 */}
+    </>
+  )
+}
+```
+
+### 差分
+
+https://github.com/MasahikoJinno/fe-boilerplate-21/pull/6
 
 ## data fetch
 
