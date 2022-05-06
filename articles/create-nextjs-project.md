@@ -3,7 +3,7 @@ title: "Next.jsのプロジェクトを作成するときにやってること�
 emoji: "😎"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["javascript", "typescript", "nextjs", "react"]
-published: false
+published: true
 ---
 
 ## 概要
