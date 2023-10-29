@@ -27,7 +27,7 @@ published: true
 
 nodejs の v20.9.0（2023/10/29 時点の LTS 版最新）をインストールしておく。
 
-私は [fnm](https://github.com/Schniz/fnm) を使ってます。
+※ 私は [fnm](https://github.com/Schniz/fnm) を使ってます。
 
 yarn も global に入れとく。
 
@@ -182,7 +182,7 @@ package.json に以下の設定を追加
 ここまでできたらエディタや pre-commit 時の code format が効くか確認する。
 問題なければ、commit する。
 
-## Static HTML Export の設定
+### Static HTML Export の設定
 
 next.config.js に以下の設定を入れる。
 
@@ -203,7 +203,9 @@ yarn build
 
 `out/` に正常に静的ファイルが出力されていることを確認する。
 
-## Firebase の設定
+### Firebase の設定
+
+#### 準備
 
 まず global に firebase-tools をインストールしておく。
 
@@ -217,7 +219,7 @@ firebase にログインしておく
 firebase login
 ```
 
-### cli で設定
+#### Firebase プロジェクトの作成
 
 ```sh:command
 firebase init
@@ -289,3 +291,5 @@ https://<project-id>.firebaseapp.com
 ※ こういう設定は後から入れるほうが大変
 
 次回の記事では、Storybook や Jest の設定をいれて、PR 時に自動テストが走るようにする。（ココまでできれば、品質の悪いコードを main ブランチに入れにくくなる）
+
+firebase init コマンドがかなり進化してて、Github Actions の workflow を自動で作ってくれるのはとても便利。
